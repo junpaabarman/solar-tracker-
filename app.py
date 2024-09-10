@@ -59,9 +59,9 @@ def home():
 def predict():
     try:
         # Retrieve query parameters
-        month = request.args.get('month', type=int)
-        day = request.args.get('day', type=int)
-        hour = request.args.get('hour', type=int)
+        month = request.args.get('month', type=float)
+        day = request.args.get('day', type=float)
+        hour = request.args.get('hour', type=float)
         temperature = request.args.get('temperature', type=float)
         humidity = request.args.get('humidity', type=float)
         ghi = request.args.get('ghi', type=float)
