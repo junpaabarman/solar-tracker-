@@ -27,8 +27,8 @@ def predict_tilt_angle(model, month, day, hour, temperature, humidity, ghi):
             'GHI': [ghi]
         })
 
-        # Scale the input data using the pre-fitted scaler
-        input_scaled = scaler.transform(input_data)
+        # Scale the input data without column names
+        input_scaled = scaler.transform(input_data.values)  # Convert DataFrame to NumPy array
 
         # Predict the tilt angle using the ANN model
         predicted_tilt_angle = model.predict(input_scaled)[0][0]
@@ -76,6 +76,3 @@ def predict():
         print(f"Error in /predict endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
-# Run the Flask app
-if __name__ == '__main__':
-    app.run(debug=True)
