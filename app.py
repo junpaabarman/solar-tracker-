@@ -4,6 +4,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import os
+from flask_cors import CORS
 
 # Custom loss function for the ANN model
 def mse(y_true, y_pred):
@@ -15,6 +16,7 @@ scaler = joblib.load('scaler.pkl')
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 def predict_tilt_angle(model, month, day, hour, temperature, humidity, ghi):
     try:
@@ -32,8 +34,8 @@ def predict_tilt_angle(model, month, day, hour, temperature, humidity, ghi):
         expected_features = ['Month', 'Day', 'Hour', 'Temperature', 'Relative Humidity', 'GHI']
         input_data = input_data.reindex(columns=expected_features, fill_value=0)
         
-        # Scale the input data
-        input_scaled = scaler.transform(input_data)
+        # Scale the input data without feature names
+        input_scaled = scaler.transform(input_data.values)
         
         # Predict the tilt angle using the ANN model
         predicted_tilt_angle = model.predict(input_scaled)[0][0]
