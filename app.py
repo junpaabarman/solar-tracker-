@@ -6,8 +6,8 @@ import pandas as pd
 def mse(y_true, y_pred):
     return tf.keras.losses.mean_squared_error(y_true, y_pred)
 
-ann_model = tf.keras.models.load_model('ANN_model.h5', custom_objects={'mse': tf.keras.losses.MeanSquaredError})
-rf_model = joblib.load('random_forest_model.pkl')  # Updated filename
+# Load the ANN model and the scaler
+model = tf.keras.models.load_model('ANN_model.h5', custom_objects={'mse': tf.keras.losses.MeanSquaredError})
 scaler = joblib.load('scaler.pkl')
 
 app = Flask(__name__)
@@ -27,11 +27,8 @@ def predict_tilt_angle(model, month, day, hour, temperature, humidity, ghi):
         # Scale the input data
         input_scaled = scaler.transform(input_data)
 
-        # Predict the tilt angle using the selected model
-        if isinstance(model, tf.keras.Model):  # ANN model
-            predicted_tilt_angle = model.predict(input_scaled)[0][0]
-        else:  # Random Forest model
-            predicted_tilt_angle = model.predict(input_scaled)[0]
+        # Predict the tilt angle using the ANN model
+        predicted_tilt_angle = model.predict(input_scaled)[0][0]
 
         # Adjust angle based on the hour
         if 7 <= hour < 13:
@@ -56,18 +53,10 @@ def predict():
         temperature = request.args.get('temperature', type=float)
         humidity = request.args.get('humidity', type=float)
         ghi = request.args.get('ghi', type=float)
-        algorithm = request.args.get('algorithm', type=str, default='ANN')
 
         # Check for missing parameters
         if None in (month, day, hour, temperature, humidity, ghi):
             return jsonify({'error': 'Missing or invalid query parameters'}), 400
-
-        if algorithm == 'ANN':
-            model = ann_model
-        elif algorithm == 'RandomForest':
-            model = rf_model
-        else:
-            return jsonify({'error': 'Invalid algorithm selection'}), 400
 
         tilt_angle = predict_tilt_angle(model, month, day, hour, temperature, humidity, ghi)
 
@@ -80,5 +69,3 @@ def predict():
         print(f"Error in /predict endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
